@@ -1,0 +1,6 @@
+{
+    "end_header_seq": ["_x0002_","_STX_","_EOH_"],
+    "ledger_paths": ["../test.xlsx","../funnyhaha.xlsx","../nometa.xlsx","../nodata.xlsx"],
+    "ledger-name-tag": "__id__",
+    "metadata_nodisplay": ["__filepath__","__filename__"]
+}

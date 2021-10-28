@@ -1,0 +1,6 @@
+- Error logging
+    - https://docs.python.org/3/howto/logging.html
+- Add optional ETX footer for data
+- Add settings menu
+    - Tick and untick ledgers for calculations
+    - Delete bad file paths and add new ones

@@ -1,6 +1,27 @@
 {
-    "end_header_seq": ["_x0002_","_STX_","_EOH_"],
-    "ledger_paths": ["../test.xlsx","../funnyhaha.xlsx","../nometa.xlsx","../nodata.xlsx"],
-    "ledger-name-tag": "__id__",
-    "metadata_nodisplay": ["__filepath__","__filename__"]
+    "spreadsheet_paths": ["../template.xlsx","../test.xlsx","../nometa.xlsx","../nodata.xlsx"],
+    "metadata_nodisplay": ["_filepath_","_filename_","_type_"],
+    "date-format":"%d %B %Y",
+    "journal-exclude": ["Sec8","Section 8","MSHDA","Rent","Monthly Rent"],
+    "journal-columns": ["Date","Amount Paid","Payment Type","Paid By"],
+
+    "name-map": {
+        "_filepath_": {"default":"_filepath_", "alt":[]},
+        "_filename_": {"default":"_filename_", "alt":[]},
+        "_name_": {"default":"_name_", "alt":["_id_","_sheetname_"]},
+        "_type_": {"default":"_type_", "alt":["_sheettype_","_datatype_","datatype"]},
+        "_stx_": {"default":null,"alt":["_x0002_","_STX_","_EOH_"]},
+        "phone": {"default":"Phone Number", "alt":["Phone Number","Phone","Phone #","Phone Numbers"]},
+        "payment": {"default":"Amount Paid", "alt":["Amount Paid","Paid","Payment","Payments","Amount","Transaction"]},
+        "balance": {"default":"Balance", "alt":["Balance","Account Balance","Total","Net"]},
+        "tenants": {"default":"Tenants","alt":["Residents"]},
+        "address": {"default":"Address","alt":["Street Address"]},
+        "rent": {"default":"Rent","alt":["Rent Total"]},
+        "rent breakdown": {"default":"Rent Breakdown","alt":[]},
+        "payment type":{"default":"Payment Type","alt":["Payment Method"]},
+        "paid by":{"default":"Paid By","alt":["Source"]},
+        "paid until":{"default":"Paid Until","alt":["Paid To","Paid Until"]},
+        "date": {"default":"Date","alt":["Transaction Date"]}
+    }
+
 }

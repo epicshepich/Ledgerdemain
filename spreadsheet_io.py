@@ -11,14 +11,48 @@ with open("settings.json","r") as reader:
     #Construct a dictionary containing the settings specified in settings.json.
 
 
+def map_name(refname:str, map=settings["name-map"])->str:
+    """This function maps a backend reference name to a dispay name
+    according to a name map dictionary, whose entries are formatted as:
+        refname: {"default":displayname, "alt":[list of alternate names]}
+    """
+    return map[refname]["default"]
 
-def process_raw_ledger(df: pd.DataFrame) -> tuple:
+
+
+def capitalize_title(text:str):
+    """Capitalizes the first letter of every word (delimited by spaces) in
+    a string."""
+    return " ".join([word.capitalize() for word in text.split(" ")])
+
+
+
+def disambiguate(name:str, map=settings["name-map"])->str:
+    """This function allows tolerance in naming convetions for column headers
+    and meta tags by mapping acceptable alternate names to a specified default
+    display name according to a name map dictionary, whose entries are formatted as:
+        refname: {"default":displayname, "alt":[list of alternate names]}"""
+    display = capitalize_title(name)
+    #If the reference name isn't in the name map, just return it back since we don't
+    #want to lose data.
+
+    for refname in map:
+        #Iterate over the reference names.
+        if name == map[refname]["default"] or name in map[refname]["alt"]:
+            display = map[refname]["default"]
+            #If the input name matches a default or is in the list of alternates
+            #for that reference, then we're done.
+            break
+    return display
+
+
+def process_raw_spreadsheet(df: pd.DataFrame) -> tuple:
     """This function takes takes a DataFrame read from an Excel file,
-    separates the header (metadata) from the body (ledger data), and returns
+    separates the header (metadata) from the body (data), and returns
     a tuple of (data, metadata).
 
     Arguments:
-        df -- a DataFrame containing raw ledger data read from an Excel file.
+        df -- a DataFrame containing raw spreadsheet data read from an Excel file.
         The formatting of the Excel file should follow these rules:
             - The header contains key, value pairs, where the key is the
             name of the field (e.g. "Tenants", "Address", "Phone Number", etc.)
@@ -30,20 +64,20 @@ def process_raw_ledger(df: pd.DataFrame) -> tuple:
             in its own cell.
 
             - At the end of the header, there is a row containing the equation
-            '=CHAR(02)' in its first column. This row marks that the ledger
-            data begins in the next row.
+            '=CHAR(02)' in its first column. This row marks that the data
+            begins in the next row.
 
             - Every column containing data must be named; any unnamed columns
             will be expunged.
 
     Outputs:
-        data -- a DataFrame containing the ledger data, with missing values
+        data -- a DataFrame containing th data, with missing values
             replaced with 0
         metadata -- a dict containing the metadata
     """
 
     stx_index = -1
-    for sequence in settings["end_header_seq"]:
+    for sequence in settings["name-map"]["_stx_"]["alt"]:
         if any(df[0]==sequence):
             stx_index = df.index[df[0]==sequence][0]
             break
@@ -70,7 +104,7 @@ def process_raw_ledger(df: pd.DataFrame) -> tuple:
             continue
             #Skip empty rows.
 
-        key = row[0]
+        key = disambiguate(row[0])
 
         if len(row) == 1:
             #Missing value.
@@ -88,23 +122,23 @@ def process_raw_ledger(df: pd.DataFrame) -> tuple:
     #of the data.
 
 
-    ledger_matrix = np.zeros(len(column_headers))
-    #Contingency for empty ledgers. Create a row of zeros if the ledger is
+    spreadsheet_matrix = np.zeros(len(column_headers))
+    #Contingency for empty spreadsheets. Create a row of zeros if the spreadsheet is
     #empty to prevent the subsequent code from breaking and still allow the
-    #ledger to be parsed.
+    #spreadsheet to be parsed.
     try:
-        ledger_matrix = df.loc[(stx_index+2):]
+        spreadsheet_matrix = df.loc[(stx_index+2):]
     except ValueError:
-        print("Empty ledger.")
+        print("Empty spreadsheet.")
 
     data = pd.DataFrame(
-        np.array(ledger_matrix),
+        np.array(spreadsheet_matrix),
         columns = np.array(column_headers)
     )
-    #Create a DataFrame containing the actual ledger data.
+    #Create a DataFrame containing the actual spreadsheet data.
 
     #If any of the metadata tags contain lists longer than the number
-    #of columns in the ledger data, then all the data rows will fill
+    #of columns in the spreadsheet data, then all the data rows will fill
     #with NaN to match the length.
 
     data.columns = data.columns.fillna('NaN')
@@ -115,18 +149,33 @@ def process_raw_ledger(df: pd.DataFrame) -> tuple:
         #there are no NaN-valued columns (i.e. metadata lists
         #do not exceed data columns in length).
 
+    for column in data.columns:
+        if "datetime" in str(data[column].dtype):
+            data[column] = pd.to_datetime(data[column]).dt.date
+            #Remove time component from datetime columns
+            data[column] = pd.DatetimeIndex(data[column]).strftime(settings["date-format"])
+            data[column] = data[column].fillna(method='ffill')
+            #Forward-fill missing dates (i.e. assume rows with unspecified dates
+            #are from the last specified date.)
+
     data = data.fillna(0)
     #Fill any remaining NaN entry with 0 - because this is legal stuff,
     #we want to keep every row, regardless of if it has a missing value.
     #Replacing NaN with 0 will cause minimal errors when computing balances.
 
+    data.rename(columns={col:disambiguate(col) for col in data.columns},inplace=True)
+    #Disambiguate column headers.
+
     return (data, metadata)
 
 
 
-def load_ledgers() -> list:
-    loaded_ledgers = []
-    for path in settings["ledger_paths"]:
+def load_spreadsheets() -> dict:
+    """This function loads data from all specified sources, processes it,
+    and stores it in the appropriate data structures."""
+    
+    loaded_spreadsheets = {}
+    for path in settings["spreadsheet_paths"]:
         try:
             raw_data = pd.read_excel(path,header=None)
         except FileNotFoundError:
@@ -139,19 +188,21 @@ def load_ledgers() -> list:
 
 
         try:
-            data, metadata = process_raw_ledger(raw_data)
-            #Try to process the ledger.
+            data, metadata = process_raw_spreadsheet(raw_data)
+            #Try to process the spreadsheet.
 
-            metadata["__filepath__"] = path
-            metadata["__filename__"] = path.split("/")[-1].replace(".xlsx","")
-            if not settings["ledger-name-tag"] in metadata:
-                metadata[settings["ledger-name-tag"]] = metadata["__filename__"]
+            metadata[map_name("_filepath_")] = path
+            metadata[map_name("_filepath_")] = path.split("/")[-1].replace(".xlsx","")
+            if not map_name("_name_") in metadata:
+                metadata[map_name("_name_")] = metadata[map_name("_filename_")]
                 #If the spreadsheet doesn't have a name tag, then set it to
                 #the file name.
 
-            loaded_ledgers.append((data,metadata))
+            meta_name = metadata[map_name("_name_")]
+
+            loaded_spreadsheets[meta_name] = (data, metadata)
         except:
             print(f"Error converting file: '{path}'")
             continue
 
-    return loaded_ledgers
+    return loaded_spreadsheets

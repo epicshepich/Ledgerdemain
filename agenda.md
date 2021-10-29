@@ -3,4 +3,17 @@
 - Add optional ETX footer for data
 - Add settings menu
     - Tick and untick ledgers for calculations
-    - Delete bad file paths and add new ones
+    - Front-end management of library
+        - Allow loading all spreadsheets from folder; add wildcard tolerance to
+            `load_spreadsheets`
+- Date formatting:
+    - https://pandas.pydata.org/docs/reference/api/pandas.Period.strftime.html
+- Balance plot
+- Filter dropdown by sheet type
+- Export journal/summary
+- Think about table overflow
+- PyInstaller
+    - https://realpython.com/pyinstaller-python/
+- Auto-install dependencies
+- Splash screen while loading data
+- Work on

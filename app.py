@@ -2,15 +2,27 @@
 import dash
 from dash import html, dcc, dash_table
 from dash.dependencies import Input, Output
+
+import plotly.express as px
+
 import pandas as pd
 import seaborn as sns
 
-from ledger_io import *
+from spreadsheet_io import *
+from analytics import *
 
 
 app = dash.Dash(__name__)
 app.title = 'Ledgerdemain'
-ledgers = load_ledgers()
+spreadsheets = load_spreadsheets()
+ledgers = {}
+for sheet in spreadsheets:
+    data, metadata = spreadsheets[sheet]
+    if "_type_" in metadata and metadata["_type_"] == 'ledger':
+        ledgers[sheet] = (data, metadata)
+
+spreadsheets["Summary of Ledgers"] = ledger_summary(ledgers)
+spreadsheets["Daily Journal"] = ledger_journal(ledgers)
 
 
 
@@ -20,30 +32,37 @@ header = html.H1(
     )
 
 
-def create_ledger_selector(ledger_list: list, focused=0):
+graph_div = html.Div(
+    id="graph-div",
+    children = []
+    )
+
+
+
+def create_dropdown_selector(spreadsheet_dictionary: dict, focused="Summary of Ledgers") -> dcc.Dropdown:
     options = []
 
-    for index, ledger in enumerate(ledger_list):
-        data, metadata = ledger
+    for meta_name in spreadsheet_dictionary:
+        data, metadata = spreadsheet_dictionary[meta_name]
         options.append({
-            "label": metadata[settings["ledger-name-tag"]],
-            "value": index
+            "label": metadata[map_name("_name_")],
+            "value": meta_name
         })
 
-    return dcc.Dropdown(id="ledger-selector",options=options,value=focused)
+    return dcc.Dropdown(id="dropdown-selector",options=options,value=focused)
 
 
 
 def metadata_display(metadata: dict):
     header = []
 
-    if settings["ledger-name-tag"] in metadata:
-        header.append(html.H2(metadata[settings["ledger-name-tag"]]))
+    if map_name("_name_") in metadata:
+        header.append(html.H2(metadata[map_name("_name_")]))
 
     for key in metadata:
-        if key in settings["metadata_nodisplay"] or key == settings["ledger-name-tag"]:
+        if key in settings["metadata_nodisplay"] or key == map_name("_name_"):
             #Don't print metadata tags specified in this list or the
-            #ledger name.
+            #spreadsheet name.
             continue
 
         value = metadata[key]
@@ -60,30 +79,35 @@ def metadata_display(metadata: dict):
 
 app.layout = html.Div(
     id="main-container",
-    children = [header, create_ledger_selector(ledgers)]
+    children = [header, create_dropdown_selector(spreadsheets)]
     )
 
 
 @app.callback(
     Output('main-container','children'),
-    Input(component_id='ledger-selector', component_property='value')
+    Input(component_id='dropdown-selector', component_property='value')
 )
-def display_ledger(selector_value):
-    global ledgers
+def display_spreadsheet(selector_value):
+    global spreadsheets
 
 
-    df, meta = ledgers[selector_value]
+    df, meta = spreadsheets[selector_value]
 
     table = dash_table.DataTable(
-        id='ledger-table',
+        id='spreadsheet-table',
         columns=[{"name": i, "id": i} for i in df.columns],
         data=df.to_dict('records'),
+        style_cell={'whiteSpace': 'pre-line'},
+        #Parse \n in a cell value as a line break instead of an em quad (default).
+        filter_action="native"
+        #Use built-in table filtering feature.
     )
 
 
     content = [header,
-        create_ledger_selector(ledgers,focused=selector_value),
+        create_dropdown_selector(spreadsheets,focused=selector_value),
         metadata_display(meta),
+        graph_div,
         table
         ]
 

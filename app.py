@@ -3,11 +3,6 @@ import dash
 from dash import html, dcc, dash_table
 from dash.dependencies import Input, Output
 
-import plotly.express as px
-
-import pandas as pd
-import seaborn as sns
-
 from spreadsheet_io import *
 from analytics import *
 

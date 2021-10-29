@@ -1,3 +1,5 @@
+"""This module generates reports and summaries from the spreadsheet library."""
+
 from spreadsheet_io import *
 
 def ledger_summary(ledgers:dict) -> tuple:

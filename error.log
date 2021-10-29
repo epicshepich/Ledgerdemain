@@ -1,7 +1,0 @@
-
-[2021-10-27 18:05:28] Traceback (most recent call last):
-  File "C:\Users\epics\Documents\Code\Ledgerdemain\Ledgerdemain\ledgerdemain.py", line 36, in <module>
-    cef.Shutdown()
-  File "cefpython_py39.pyx", line 907, in cefpython_py39.Shutdown
-KeyboardInterrupt
-

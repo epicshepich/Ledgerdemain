@@ -6,14 +6,19 @@
     - Front-end management of library
         - Allow loading all spreadsheets from folder; add wildcard tolerance to
             `load_spreadsheets`
+    - https://stackoverflow.com/questions/69678621/input-with-multiple-removable-values-in-dash
 - Date formatting:
     - https://pandas.pydata.org/docs/reference/api/pandas.Period.strftime.html
-- Balance plot
+- Plot the running total versus date
 - Filter dropdown by sheet type
 - Export journal/summary
 - Think about table overflow
 - PyInstaller
     - https://realpython.com/pyinstaller-python/
+    - cx_Freeze: https://community.plotly.com/t/convert-dash-to-executable-file-exe/14222/3
 - Auto-install dependencies
 - Splash screen while loading data
 - Work on
+- Date picker range
+    - https://community.plotly.com/t/datepickerrange-to-update-data-table/16193/6
+- Draft a readme

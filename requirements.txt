@@ -1,6 +1,6 @@
-pandas
 numpy
+pandas
+openpyxl
 plotly
 dash
-openpyxl
 cefpython3

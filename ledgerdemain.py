@@ -4,17 +4,21 @@ import threading
 import sys
 from app import *
 
+port = 8052
+
+sys.excepthook = cef.ExceptHook
+
 def thread_cef():
     """This function opens a CEF browser pointing to the
     localhost Dash app."""
     sys.excepthook = cef.ExceptHook
-    cef.Initialize()
-    cef.CreateBrowserSync(url="http://localhost:8042",
+    cef.Initialize(switches={'disable-gpu-compositing': None})
+    cef.CreateBrowserSync(url=f"http://localhost:{port}",
                                   window_title="Ledgerdemain")
     cef.MessageLoop()
 
 
 cef_thread = threading.Thread(target=thread_cef)
 cef_thread.start()
-serve(app.server, host="localhost", port=8042)
+serve(app.server, host="localhost", port=port)
 cef.Shutdown()

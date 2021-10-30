@@ -158,6 +158,9 @@ def load_spreadsheets() -> dict:
                 #If the spreadsheet doesn't have a name tag, then set it to
                 #the file name.
 
+            if not map_name("_type_") in metadata:
+                metadata[map_name("_type_")] = "_blank_"
+
             meta_name = metadata[map_name("_name_")]
 
             loaded_spreadsheets[meta_name] = (data, metadata)

@@ -10,7 +10,8 @@ def ledger_summary(ledgers:dict) -> tuple:
     summary = []
 
     summary_meta = {
-        map_name("_name_"): "Summary of Ledgers"
+        map_name("_name_"): map_name("ledger-summary"),
+        map_name("_type_"): map_name("_summarytype_")
     }
 
     for ledger_name in ledgers:
@@ -72,8 +73,8 @@ def ledger_journal(ledgers:dict) -> tuple:
 
 
     journal_meta = {
-        map_name("_name_"):"Daily Journal",
-        map_name("_type_"):"journal",
+        map_name("_name_"): map_name("journal-name"),
+        map_name("_type_"): map_name("_journaltype_"),
         "Last Entry": journal[map_name("date")].iloc[-1]
     }
 

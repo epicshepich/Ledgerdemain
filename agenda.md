@@ -1,3 +1,4 @@
+- Add a function to make sheet names unique
 - Error logging
     - https://docs.python.org/3/howto/logging.html
 - Add optional ETX footer for data
@@ -7,11 +8,18 @@
         - Allow loading all spreadsheets from folder; add wildcard tolerance to
             `load_spreadsheets`
     - https://stackoverflow.com/questions/69678621/input-with-multiple-removable-values-in-dash
+    - Display error when trying to add a restricted name to a name map
+        - Any name that exists as a default or an alt is restricted
+        - Restricted as column names as well
+        - Add description key to certain names (display as tooltip?)
+            - sheet types
+
 - Date formatting:
     - https://pandas.pydata.org/docs/reference/api/pandas.Period.strftime.html
 - Plot the running total versus date
 - Filter dropdown by sheet type
 - Export journal/summary
+    - copy from table: https://dash.plotly.com/dash-core-components/clipboard
 - Think about table overflow
 - PyInstaller
     - https://realpython.com/pyinstaller-python/

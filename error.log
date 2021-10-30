@@ -1,0 +1,6 @@
+
+[2021-10-29 19:23:39] Traceback (most recent call last):
+  File "C:\Users\epics\Documents\Code\Ledgerdemain\Ledgerdemain\ledgerdemain.py", line 19, in <module>
+    serve(app.server, host="localhost", port=8042)
+NameError: name 'app' is not defined
+

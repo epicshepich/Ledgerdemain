@@ -3,6 +3,7 @@ import dash
 from dash import html, dcc, dash_table
 from dash.dependencies import Input, Output, State
 from functools import partial
+from typing import Callable
 from spreadsheet_io import *
 from analytics import *
 
@@ -139,11 +140,15 @@ def copy_table_callback(clipboard,table):
 
 
 
-def tag_editor(key, tags, name=None):
-    #https://stackoverflow.com/questions/69678621/input-with-multiple-removable-values-in-dash
+def tag_editor(key, tags, callback=None,*args,**kwargs):
+    """This function creates a tag editor input by adapting a multi-input
+    dropdown. Developed with code scraped from:
+    https://stackoverflow.com/questions/69678621/input-with-multiple-removable-values-in-dash"""
     content = html.Div(
-        id=f"{key} tag editor",
+        id=f'{key} tag editor',
         children = [
+            dcc.Input(id=f'{key} tag entry', value=''),
+            html.Button('Add Option', id=f'{key} tag add'),
             dcc.Dropdown(
                 id=f"{key} tags",
                 options=[{'label': tag, 'value': tag} for tag in tags],
@@ -153,20 +158,46 @@ def tag_editor(key, tags, name=None):
         ]
     )
 
+    @app.callback(
+        [Output(f'{key} tags', 'options'),
+        Output(f'{key} tags', 'value')],
+        [Input(f'{key} tag add', 'n_clicks')],
+        [State(f'{key} tag entry', 'value'),
+         State(f'{key} tags', 'options')],
+    )
+    def add_tag(n_clicks, new_value, current_options):
+        """This callback enables the addition of tags to the tag editor."""
+        if n_clicks and not new_value in [""," ",None]:
+            current_options.append({'label': new_value, 'value': new_value})
+        return current_options, current_options
+
+
     return content
 
 
-
+"""
+def overwrite_setting(key, value, dictionary=settings):
+    dictionary[key] = value
+    update_settings()
+"""
 
 
 settings_menu = html.Div(
     id="Settings",
     children=[html.H2("Settings"),
     dcc.Markdown(f'Version: {settings["version"]}'),
-    tag_editor("test", settings["journal-exclude"])
+    tag_editor("journal-exclude", settings["journal-exclude"])#,overwrite_setting)
     ]
 )
 
+
+"""@app.callback(
+    Input(f'journal-exclude tags', 'value')
+)
+def overwrite_setting(value, dictionary=settings):
+    dictionary["journal-exclude"] = value
+    update_settings()
+"""
 
 
 tabs = dcc.Tabs([

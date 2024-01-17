@@ -49,36 +49,10 @@ def disambiguate(name:str, map=settings["name-map"])->str:
     return display
 
 
-def update_setting(key,value,action="overwrite") -> None:
+def update_settings():
     """This function updates the settings object and reflects the changes in
-    the source JSON file.
-
-    action:
-        overwrite -- replaces value
-        append -- appends value to list
-        remove -- removes value from list"""
+    the source JSON file."""
     global settings
 
-    if action == "overwrite":
-        settings[key] = value
-    elif action == "append":
-        if isinstance(settings[key],list):
-            if value not in settings[key]:
-                settings[key].append(value)
-                #Don't add redundant values.
-        else:
-            [settings[key],value]
-        #If the setting is already a list, then append the new value. Otherwise, make the setting a list of
-        #the old and new values.
-    elif action == "remove":
-        if isinstance(settings[key],list):
-            while value in settings[key]:
-                settings[key].remove(value)
-                #If there are duplicates, remove all instances of them.
-        else:
-            settings[key] == None
-
-
-
     with open("settings.json","w") as writer:
-        json.dump(settings, writer)
+        json.dump(settings, writer, indent=4)

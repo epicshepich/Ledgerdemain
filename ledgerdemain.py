@@ -4,7 +4,7 @@ import threading
 import sys
 from app import *
 
-port = 8052
+port = 8055
 
 sys.excepthook = cef.ExceptHook
 
